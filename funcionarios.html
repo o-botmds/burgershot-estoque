@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Burgershot • Funcionários</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="logo">🍔 BURGERSHOT</div>
+    <div>
+      <span id="user-name" style="margin-right:20px; font-weight:500;"></span>
+      <button onclick="logout()" class="btn">Sair</button>
+    </div>
+  </nav>
+
+  <div style="max-width:1200px; margin:40px auto; padding:0 5%;">
+    <h1 style="margin-bottom:30px;">👥 Funcionários</h1>
+
+    <div id="users-list" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap:20px;">
+      <!-- Lista carregada pelo JavaScript -->
+    </div>
+  </div>
+
+  <script src="js/supabase.js"></script>
+  <script src="js/auth.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      await checkAuth();
+      loadUsers();
+    });
+
+    async function loadUsers() {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, nome, cargo, autorizado')
+        .order('nome');
+
+      const container = document.getElementById('users-list');
+      container.innerHTML = '';
+
+      if (!data || data.length === 0) {
+        container.innerHTML = '<p style="grid-column:1/-1; text-align:center; padding:40px;">Nenhum funcionário cadastrado ainda.</p>';
+        return;
+      }
+
+      data.forEach(user => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div style="display:flex; align-items:center; gap:15px;">
+            <div style="width:60px; height:60px; background:#ddd; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.8rem;">
+              👤
+            </div>
+            <div style="flex:1;">
+              <h3>${user.nome || 'Sem nome'}</h3>
+              <p style="color:#666;">${user.cargo || 'Funcionário'}</p>
+              <span style="padding:4px 12px; border-radius:999px; background:${user.autorizado ? '#d4edda' : '#f8d7da'}; font-size:0.9rem;">
+                ${user.autorizado ? '✅ Ativo' : '⛔ Inativo'}
+              </span>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+  </script>
+</body>
+</html>
