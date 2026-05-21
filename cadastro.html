@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Burgershot • Cadastro</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body style="background:#111; color:white; min-height:100vh; display:flex; align-items:center; justify-content:center;">
+
+<div class="card" style="width:400px; padding:3rem; text-align:center;">
+  <h1 style="color:#EC3521; font-size:2.8rem;">🍔 BURGERSHOT</h1>
+  
+  <input type="text" id="nome" placeholder="Seu nome completo" style="width:100%; padding:14px; margin:10px 0; border-radius:999px;">
+  <input type="email" id="email" placeholder="E-mail" style="width:100%; padding:14px; margin:10px 0; border-radius:999px;">
+  <input type="password" id="password" placeholder="Senha" style="width:100%; padding:14px; margin:10px 0; border-radius:999px;">
+
+  <button onclick="cadastrar()" class="btn btn-primary" style="width:100%; padding:16px; margin-top:20px;">
+    Criar Conta
+  </button>
+</div>
+
+<script src="js/supabase.js"></script>
+
+<script>
+async function cadastrar() {
+  const nome = document.getElementById('nome').value;
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+
+  if (!nome || !email || !password) return alert("Preencha todos os campos!");
+
+  const { data, error } = await supabase.auth.signUp({ email, password });
+
+  if (error) return alert(error.message);
+
+  // Cria o perfil
+  await supabase.from('profiles').insert({
+    id: data.user.id,
+    nome: nome,
+    autorizado: false  // Admin precisa liberar
+  });
+
+  alert("Cadastro realizado! Aguarde o administrador liberar seu acesso.");
+  window.location.href = "login.html";
+}
+</script>
+</body>
+</html>

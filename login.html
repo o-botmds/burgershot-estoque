@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Burgershot • Login</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body style="background:#111; color:white; min-height:100vh; display:flex; align-items:center; justify-content:center;">
+
+<div class="card" style="width:380px; text-align:center; padding:3rem;">
+  <h1 style="font-size:3rem; color:#EC3521;">🍔 BURGERSHOT</h1>
+  <p style="color:#F9C74F; margin:10px 0 30px;">Controle de Estoque</p>
+
+  <input type="email" id="email" placeholder="E-mail" style="width:100%; padding:16px; margin:10px 0; border-radius:999px; border:none; font-size:1.1rem;">
+  <input type="password" id="password" placeholder="Senha" style="width:100%; padding:16px; margin:10px 0; border-radius:999px; border:none; font-size:1.1rem;">
+
+  <button onclick="fazerLogin()" class="btn btn-primary" style="width:100%; padding:16px; font-size:1.2rem; margin-top:20px;">
+    Entrar
+  </button>
+
+  <p style="margin-top:25px; font-size:0.95rem; opacity:0.8;">Primeiro acesso? Peça ao administrador</p>
+</div>
+
+<script src="js/supabase.js"></script>
+<script src="js/auth.js"></script>
+
+<script>
+async function fazerLogin() {
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  
+  if (!email || !password) return alert("Preencha todos os campos");
+
+  const ok = await login(email, password);
+  if (ok) window.location.href = 'index.html';
+}
+</script>
+</body>
+</html>

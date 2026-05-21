@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Burgershot • Estoque</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .stock-card {
+      transition: all 0.3s;
+    }
+    .stock-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 15px 35px rgba(236, 53, 33, 0.15);
+    }
+    .quantidade {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--red);
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="logo">🍔 BURGERSHOT</div>
+    <div style="display: flex; align-items: center; gap: 15px;">
+      <span id="user-name" style="font-weight:500; color: #333;"></span>
+      <button onclick="logout()" class="btn">Sair</button>
+    </div>
+  </nav>
+
+  <div style="max-width:1400px; margin:40px auto; padding:0 5%; display:flex; gap:40px;">
+    
+    <!-- Sidebar -->
+    <div style="width:260px; background:white; padding:20px; border-radius:20px; height: fit-content; box-shadow: 0 5px 20px rgba(0,0,0,0.08);">
+      <a href="index.html" style="display:block; padding:14px 20px; color:var(--red); font-weight:600; border-radius:12px; background:#fff0f0;">📦 Estoque</a>
+      <a href="funcionarios.html" style="display:block; padding:14px 20px; color:#333; border-radius:12px;">👥 Funcionários</a>
+      <a href="chat.html" style="display:block; padding:14px 20px; color:#333; border-radius:12px;">💬 Chat</a>
+      <a href="admin.html" style="display:block; padding:14px 20px; color:#333; border-radius:12px;">⚙️ Administrador</a>
+    </div>
+
+    <!-- Main Content -->
+    <div style="flex:1;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
+        <h1 style="font-size:2.5rem;">Controle de Estoque</h1>
+        <button onclick="loadStock()" class="btn" style="background:#ddd;">🔄 Atualizar</button>
+      </div>
+
+      <!-- Barra de Pesquisa -->
+      <input type="text" id="search" placeholder="Buscar item..." 
+             style="width:100%; padding:16px; border-radius:999px; border:1px solid #ddd; margin-bottom:30px; font-size:1.1rem;"
+             onkeyup="filtrarItens()">
+
+      <div id="stock-list" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap:25px;">
+        <!-- Itens carregados pelo JavaScript -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/supabase.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/stock.js"></script>
+
+  <script>
+    let todosItens = []; // Guardar itens para filtro
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const user = await checkAuth();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('nome')
+          .eq('id', user.id)
+          .single();
+        
+        document.getElementById('user-name').textContent = 
+          profile?.nome ? `👋 ${profile.nome}` : 'Funcionário';
+      }
+      
+      await loadStock();
+    });
+
+    // Função para filtrar itens na busca
+    function filtrarItens() {
+      const termo = document.getElementById('search').value.toLowerCase();
+      const container = document.getElementById('stock-list');
+      
+      container.innerHTML = '';
+
+      const filtrados = todosItens.filter(item => 
+        item.nome.toLowerCase().includes(termo)
+      );
+
+      if (filtrados.length === 0) {
+        container.innerHTML = `<p style="grid-column:1/-1; text-align:center; padding:40px;">Nenhum item encontrado.</p>`;
+        return;
+      }
+
+      renderItens(filtrados);
+    }
+
+    async function loadStock() {
+      const { data, error } = await supabase
+        .from('itens_estoque')
+        .select('*')
+        .order('nome');
+
+      if (error) {
+        console.error(error);
+        return;
+      }
+
+      todosItens = data || [];
+      renderItens(todosItens);
+    }
+
+    function renderItens(itens) {
+      const container = document.getElementById('stock-list');
+      container.innerHTML = '';
+
+      itens.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'card stock-card';
+        card.innerHTML = `
+          <img src="${item.foto_url || 'https://via.placeholder.com/400x220/EC3521/FFFFFF?text=' + encodeURIComponent(item.nome)}" 
+               style="width:100%; height:200px; object-fit:cover; border-radius:16px;">
+          
+          <h3 style="margin:18px 0 8px; font-size:1.4rem;">${item.nome}</h3>
+          
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span class="quantidade">${item.quantidade}</span>
+            <span style="color:#666; font-size:1rem;">unidades</span>
+          </div>
+          
+          <small style="color:#888;">Mínimo: ${item.min_quantidade}</small>
+          
+          <div style="margin-top:20px; display:flex; gap:12px;">
+            <button onclick="alterarQuantidade(${item.id}, -1)" 
+                    class="btn" style="background:#ddd; flex:1; padding:12px;">
+              − Remover
+            </button>
+            <button onclick="alterarQuantidade(${item.id}, 1)" 
+                    class="btn btn-primary" style="flex:1; padding:12px;">
+              + Adicionar
+            </button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+  </script>
+</body>
+</html>
